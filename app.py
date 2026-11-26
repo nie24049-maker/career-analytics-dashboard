@@ -10,7 +10,7 @@ st.markdown("""
 [data-testid="stSidebar"] * { color: white; }
 .hero { background: linear-gradient(120deg,#0b3954,#087e8b); color:white; padding:2rem; border-radius:18px; margin-bottom:1rem; }
 .hero h1 { margin:0; font-size:2.7rem; }
-.card { background:white; border:1px solid #d9e2ec; border-radius:14px; padding:1rem; box-shadow:0 4px 12px #102a4314; }
+.card { background:white; border:1px solid #d9e2ec; border-radius:14px; padding:1rem; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -37,44 +37,37 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-cols = st.columns(4)
-for col, value, label in zip(cols, ["50+", "3.75+", "5", "2028"], ["Target career chats", "GPA target", "Core competencies", "Governance horizon"]):
-    with col:
-        st.markdown(f'<div class="card"><h2>{value}</h2><p>{label}</p></div>', unsafe_allow_html=True)
+st.caption("ITM 101 cloud project • Academic progress • Networking • Governance")
 
-networking, skills, roadmap = st.tabs(["Networking & Career Chats", "Competency & Skill Matrix", "Strategic Milestones Roadmap"])
+networking = pd.DataFrame([
+    {"Contact":"Sister Paulette Kirkham", "Role":"Leadership Communication", "Key Takeaway":"Clear communication builds trust and alignment.", "Follow-up Status":"Send thank-you note"},
+    {"Contact":"Bob Morley", "Role":"Strategy Consulting", "Key Takeaway":"Translate analysis into decisions leaders can act on.", "Follow-up Status":"Schedule follow-up"},
+    {"Contact":"Jared Stanger", "Role":"Healthcare AI & Lean", "Key Takeaway":"Pair responsible AI with measurable process improvement.", "Follow-up Status":"Research next steps"},
+    {"Contact":"Amy Staiger", "Role":"Academic Advising", "Key Takeaway":"Good systems make student progress easier to navigate.", "Follow-up Status":"Complete"},
+])
 
-with networking:
+skills = pd.DataFrame({"Skill":["Business Operations","I-O Psychology","AI Prompt Engineering","Process Optimization","Team Assessment Design"], "Proficiency":[82,76,68,73,64]}).set_index("Skill")
+
+network_tab, skills_tab, roadmap_tab = st.tabs(["Networking & Career Chats", "Competency & Skill Matrix", "Strategic Milestones Roadmap"])
+with network_tab:
     st.subheader("Recent informational interviews")
-    data = pd.DataFrame([
-        ["Sister Paulette Kirkham", "Leadership Communication", "Values-based communication builds trust during change.", "Thank-you sent"],
-        ["Bob Morley", "Strategy Consulting", "Strong problem framing makes recommendations actionable.", "Schedule next chat"],
-        ["Jared Stanger", "Healthcare AI & Lean", "Pair AI experiments with disciplined process measurement.", "Notes captured"],
-        ["Amy Staiger", "Academic Advising", "Easy-to-navigate support systems improve student success.", "Intro requested"],
-    ], columns=["Contact", "Role", "Key Takeaway", "Follow-up Status"])
-    statuses = st.multiselect("Filter by follow-up status", data["Follow-up Status"].unique(), default=list(data["Follow-up Status"].unique()))
-    st.dataframe(data[data["Follow-up Status"].isin(statuses)], use_container_width=True, hide_index=True)
-
-with skills:
-    st.subheader("Competency & Skill Matrix")
-    st.write("Adjust the sliders to model current proficiency.")
-    defaults = {"Business Operations":78, "I-O Psychology":68, "AI Prompt Engineering":62, "Process Optimization":74, "Team Assessment Design":58}
-    values = {skill: st.slider(skill, 0, 100, score, 5) for skill, score in defaults.items()}
-    chart = pd.DataFrame({"Skill": list(values), "Proficiency": list(values.values())})
-    st.bar_chart(chart, x="Skill", y="Proficiency", color="#087e8b")
-    st.info(f"Average proficiency: {round(chart['Proficiency'].mean())}/100")
-
-with roadmap:
-    st.subheader("Strategic Milestones Roadmap")
+    search = st.text_input("Filter contacts or topics", placeholder="Try: strategy")
+    view = networking if not search else networking[networking.astype(str).apply(lambda row: row.str.contains(search, case=False).any(), axis=1)]
+    st.dataframe(view, use_container_width=True, hide_index=True)
+with skills_tab:
+    st.subheader("Current proficiency snapshot")
+    st.bar_chart(skills, y="Proficiency", horizontal=True, use_container_width=True)
+    st.caption("Adjust these baseline scores as coursework, projects, and conversations create new evidence.")
+with roadmap_tab:
+    st.subheader("Strategic milestones")
     milestones = [
-        ("2026–2027", "Student Leadership Council Governance", "Build governance experience through committee service and measurable campus improvements."),
-        ("2027", "Academic TA-ship", "Apply business and I-O Psychology concepts while mentoring peers and improving learning workflows."),
-        ("Spring 2028", "President Meredith Meeting", "Present a campus-systems portfolio focused on team performance and operational excellence."),
+        ("2026–2027", "Student Leadership Council Governance", "Build practical governance experience and improve campus systems."),
+        ("2027", "Academic TA-ship", "Apply business and I-O psychology concepts while supporting other students."),
+        ("Spring 2028", "President Meredith Meeting", "Present a concise vision for student leadership and campus operations."),
     ]
     for year, title, detail in milestones:
-        st.markdown(f"### {year} — {title}
-{detail}
+        st.markdown(f"### {year} — {title}")
+        st.write(detail)
+        st.divider()
 
----")
-
-st.caption("Austin Nielsen • Academic & Career Operations Hub • Built with Streamlit")
+st.success("Dashboard ready for continuous updates as academic, networking, and governance progress evolves.")
